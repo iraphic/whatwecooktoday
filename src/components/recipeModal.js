@@ -1,4 +1,4 @@
-import { favorites, showToast } from '../store.js';
+import { favorites, mealPlan, showToast } from '../store.js';
 import { icons } from '../icons.js';
 
 export function showRecipeModal(recipe) {
@@ -67,6 +67,12 @@ export function showRecipeModal(recipe) {
                       <div class="meta-value">${recipe.calories}</div>
                       <div class="meta-label">kkal/porsi</div>
                     </div>
+                  </div>
+
+                  <div class="recipe-hero-actions" style="margin-top: var(--space-5);">
+                    <button class="btn btn-primary" id="modal-add-planner">
+                      📅 Tambah ke Planner
+                    </button>
                   </div>
                 </div>
               </div>
@@ -212,5 +218,67 @@ export function showRecipeModal(recipe) {
     // but the underlying page might need to be refreshed by the user if they close it.
     // The easiest way is to dispatch a custom event that the page can listen to, or just let them refresh.
     window.dispatchEvent(new CustomEvent('recipe-fav-toggled'));
+  });
+
+  dialog.querySelector('#modal-add-planner')?.addEventListener('click', () => {
+    const today = new Date().toISOString().split('T')[0];
+    const assignDialog = document.createElement('dialog');
+    assignDialog.className = 'modal-dialog';
+    assignDialog.innerHTML = `
+      <div class="modal-header">
+        <h2>Pilih Tanggal & Waktu</h2>
+        <button class="modal-close">${icons.x}</button>
+      </div>
+      <div class="modal-body">
+        <div class="input-group" style="margin-bottom: var(--space-4);">
+          <label>Tanggal</label>
+          <input type="date" class="input-field" id="assign-date" value="${today}" />
+        </div>
+        <div class="input-group" style="margin-bottom: var(--space-4);">
+          <label>Waktu Makan</label>
+          <select class="input-field" id="assign-meal-type">
+            <option value="sarapan">Sarapan</option>
+            <option value="siang">Makan Siang</option>
+            <option value="malam">Makan Malam</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary modal-cancel-btn">Batal</button>
+        <button class="btn btn-primary" id="assign-save">Tambahkan</button>
+      </div>
+    `;
+
+    document.getElementById('modal-root').appendChild(assignDialog);
+    assignDialog.showModal();
+
+    const closeAssign = () => {
+      assignDialog.close();
+      assignDialog.remove();
+    };
+
+    assignDialog.querySelector('.modal-close').addEventListener('click', closeAssign);
+    assignDialog.querySelector('.modal-cancel-btn').addEventListener('click', closeAssign);
+    assignDialog.addEventListener('click', (e) => { if (e.target === assignDialog) closeAssign(); });
+
+    assignDialog.querySelector('#assign-save').addEventListener('click', () => {
+      const dateVal = assignDialog.querySelector('#assign-date').value;
+      const typeVal = assignDialog.querySelector('#assign-meal-type').value;
+      
+      if (!dateVal) {
+        showToast('Pilih tanggal terlebih dahulu', 'error');
+        return;
+      }
+      
+      mealPlan.setMeal(dateVal, typeVal, recipe);
+      showToast('Menu berhasil ditambahkan ke Planner! 📅');
+      closeAssign();
+      
+      // Optionally close the recipe modal too
+      close();
+      
+      // Trigger update if we are on meal planner page
+      window.dispatchEvent(new CustomEvent('meal-plan-updated'));
+    });
   });
 }

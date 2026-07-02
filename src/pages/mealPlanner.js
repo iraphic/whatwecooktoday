@@ -1,5 +1,5 @@
 // ===== Meal Planner Page =====
-import { mealPlan, pantry, favorites, showToast } from '../store.js';
+import { mealPlan, pantry, favorites, recipes, showToast } from '../store.js';
 import { generateMealPlanAI } from '../ai.js';
 import { icons } from '../icons.js';
 import { showRecipeModal } from '../components/recipeModal.js';
@@ -213,60 +213,42 @@ function render(container) {
 }
 
 function showAssignModal(container, date, mealType) {
-  const favs = favorites.getAll();
-  const history = (await_nothing(), []);
+  const history = recipes.getAll();
 
   const dialog = document.createElement('dialog');
   dialog.className = 'modal-dialog';
+  dialog.style.maxWidth = '600px';
   dialog.innerHTML = `
     <div class="modal-header">
       <h2>Pilih Menu — ${mealType.charAt(0).toUpperCase() + mealType.slice(1)}</h2>
       <button class="modal-close">${icons.x}</button>
     </div>
-    <div class="modal-body">
-      <div class="input-group" style="margin-bottom: var(--space-4);">
-        <label>Nama Menu</label>
-        <input type="text" class="input-field" id="assign-name" placeholder="Contoh: Nasi Goreng" />
-      </div>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); margin-bottom: var(--space-4);">
-        <div class="input-group">
-          <label>Waktu Masak (menit)</label>
-          <input type="number" class="input-field" id="assign-time" placeholder="30" />
+    <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+      <p style="margin-bottom: var(--space-4); color: var(--color-neutral-500); font-size: var(--font-size-sm);">
+        Pilih salah satu resep dari riwayat generate AI kamu:
+      </p>
+      
+      ${history.length > 0 ? `
+        <div style="display: flex; flex-direction: column; gap: var(--space-3);">
+          ${history.map(r => `
+            <div class="history-pick-item" data-id="${r.id}" style="display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3); border: 1px solid var(--color-neutral-200); border-radius: var(--radius-md); cursor: pointer; transition: background 0.2s;">
+              <div style="font-size: 1.5rem;">${r.emoji || '🍽️'}</div>
+              <div style="flex: 1;">
+                <div style="font-weight: var(--font-weight-medium); color: var(--color-neutral-900);">${r.name}</div>
+                <div style="font-size: var(--font-size-xs); color: var(--color-neutral-500); margin-top: 2px;">
+                  ⏱️ ${r.cookTime || '?'} mnt &nbsp;•&nbsp; 🔥 ${r.calories || '?'} kkal
+                </div>
+              </div>
+              <div style="color: var(--color-primary-600);">+ Pilih</div>
+            </div>
+          `).join('')}
         </div>
-        <div class="input-group">
-          <label>Kalori</label>
-          <input type="number" class="input-field" id="assign-cal" placeholder="400" />
+      ` : `
+        <div style="text-align: center; padding: var(--space-6) 0;">
+          <div style="font-size: 2rem; margin-bottom: var(--space-2);">📋</div>
+          <p style="color: var(--color-neutral-500);">Riwayat resep masih kosong.</p>
         </div>
-      </div>
-      <div class="input-group">
-        <label>Emoji</label>
-        <select class="input-field" id="assign-emoji">
-          <option value="🍽️">🍽️ Default</option>
-          <option value="🍳">🍳 Telur</option>
-          <option value="🍛">🍛 Nasi</option>
-          <option value="🍗">🍗 Ayam</option>
-          <option value="🥘">🥘 Semur</option>
-          <option value="🍲">🍲 Sup</option>
-          <option value="🥗">🥗 Salad</option>
-          <option value="🍜">🍜 Mie</option>
-        </select>
-      </div>
-      ${favs.length > 0 ? `
-        <div style="margin-top: var(--space-5); border-top: 1px solid var(--color-neutral-100); padding-top: var(--space-4);">
-          <strong style="font-size: var(--font-size-sm);">Dari Favorit:</strong>
-          <div style="display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-2);">
-            ${favs.slice(0, 6).map(f => `
-              <button class="btn btn-sm btn-secondary fav-pick" data-name="${f.name}" data-time="${f.cookTime||30}" data-cal="${f.calories||400}" data-emoji="${f.emoji||'🍽️'}">
-                ${f.emoji || '🍽️'} ${f.name}
-              </button>
-            `).join('')}
-          </div>
-        </div>
-      ` : ''}
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary modal-cancel-btn">Batal</button>
-      <button class="btn btn-primary" id="assign-save">Simpan</button>
+      `}
     </div>
   `;
 
@@ -274,33 +256,29 @@ function showAssignModal(container, date, mealType) {
   dialog.showModal();
 
   dialog.querySelector('.modal-close').addEventListener('click', () => { dialog.close(); dialog.remove(); });
-  dialog.querySelector('.modal-cancel-btn').addEventListener('click', () => { dialog.close(); dialog.remove(); });
   dialog.addEventListener('click', (e) => { if (e.target === dialog) { dialog.close(); dialog.remove(); } });
 
-  dialog.querySelectorAll('.fav-pick').forEach(btn => {
-    btn.addEventListener('click', () => {
-      dialog.querySelector('#assign-name').value = btn.dataset.name;
-      dialog.querySelector('#assign-time').value = btn.dataset.time;
-      dialog.querySelector('#assign-cal').value = btn.dataset.cal;
-      dialog.querySelector('#assign-emoji').value = btn.dataset.emoji;
+  // Add hover effect via JS since it's inline
+  dialog.querySelectorAll('.history-pick-item').forEach(item => {
+    item.addEventListener('mouseenter', () => {
+      item.style.background = 'var(--color-primary-50)';
+      item.style.borderColor = 'var(--color-primary-200)';
     });
-  });
-
-  dialog.querySelector('#assign-save').addEventListener('click', () => {
-    const name = dialog.querySelector('#assign-name').value.trim();
-    if (!name) { showToast('Nama menu harus diisi', 'error'); return; }
-
-    mealPlan.setMeal(date, mealType, {
-      name,
-      cookTime: Number(dialog.querySelector('#assign-time').value) || 30,
-      calories: Number(dialog.querySelector('#assign-cal').value) || 400,
-      emoji: dialog.querySelector('#assign-emoji').value,
+    item.addEventListener('mouseleave', () => {
+      item.style.background = 'transparent';
+      item.style.borderColor = 'var(--color-neutral-200)';
     });
-
-    dialog.close();
-    dialog.remove();
-    showToast('Menu berhasil ditambahkan');
-    render(container);
+    
+    item.addEventListener('click', () => {
+      const recipe = history.find(r => r.id === item.dataset.id);
+      if (recipe) {
+        mealPlan.setMeal(date, mealType, recipe);
+        showToast('Menu berhasil ditambahkan');
+        dialog.close();
+        dialog.remove();
+        render(container);
+      }
+    });
   });
 }
 
