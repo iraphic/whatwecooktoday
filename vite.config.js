@@ -6,15 +6,21 @@ import fs from 'fs';
 const pkg = JSON.parse(fs.readFileSync('./package.json', 'utf-8'));
 let gitHash = '';
 let gitDate = '';
+let commitMsg = '';
 
 try {
   gitHash = execSync('git rev-parse --short HEAD').toString().trim();
   gitDate = execSync('git log -1 --format=%cd --date=short').toString().trim();
+  commitMsg = execSync('git log -1 --format=%s').toString().trim();
 } catch (e) {
   console.warn('Warning: Could not fetch git info.');
 }
 
-const appVersion = `${pkg.version}${gitHash ? ` (${gitHash})` : ''}`;
+// Cek apakah pesan commit mengandung versi (misal: v1.0.1)
+const versionMatch = commitMsg.match(/v\d+\.\d+\.\d+/);
+const baseVersion = versionMatch ? versionMatch[0].replace('v', '') : pkg.version;
+
+const appVersion = `${baseVersion}${gitHash ? ` (${gitHash})` : ''}`;
 
 export default defineConfig({
   root: '.',
