@@ -2,6 +2,7 @@
 import { favorites, showToast } from '../store.js';
 import { icons } from '../icons.js';
 import { navigateTo } from '../router.js';
+import { showRecipeModal } from '../components/recipeModal.js';
 
 export function renderFavorites(container) {
   render(container);
@@ -74,7 +75,10 @@ function render(container) {
   container.querySelectorAll('[data-cook]').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
-      showToast('Selamat memasak! 🍳');
+      const recipe = favs.find(r => r.id === btn.dataset.cook);
+      if (recipe) {
+        showRecipeModal(recipe);
+      }
     });
   });
 }

@@ -2,6 +2,7 @@
 import { recipes, favorites, showToast } from '../store.js';
 import { icons } from '../icons.js';
 import { navigateTo } from '../router.js';
+import { showRecipeModal } from '../components/recipeModal.js';
 
 export function renderHistory(container) {
   render(container);
@@ -108,6 +109,19 @@ function render(container) {
       recipes.remove(btn.dataset.del);
       showToast('Resep dihapus dari riwayat');
       render(container);
+    });
+  });
+
+  // Open recipe modal when clicking on the history item
+  container.querySelectorAll('.history-item').forEach(item => {
+    // Add style to indicate it's clickable
+    item.style.cursor = 'pointer';
+    
+    item.addEventListener('click', () => {
+      const recipe = all.find(r => r.id === item.dataset.id);
+      if (recipe) {
+        showRecipeModal(recipe);
+      }
     });
   });
 }

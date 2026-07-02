@@ -3,7 +3,7 @@
 import { settings } from './store.js';
 
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
-const DEFAULT_MODEL = 'openrouter/free';
+const DEFAULT_MODEL = 'poolside/laguna-m.1:free';
 
 // ── Generate recipe from ingredients ──
 export async function generateRecipe(ingredients) {
@@ -66,7 +66,7 @@ fromPantry true jika bahan ada di daftar input, false jika bahan tambahan.`;
         'X-Title': 'WhatWeCookToday'
       },
       body: JSON.stringify({
-        model: DEFAULT_MODEL,
+        models: [DEFAULT_MODEL, 'openrouter/free'],
         messages: [{ role: "user", content: prompt }],
         temperature: 0.8
       })
@@ -143,7 +143,7 @@ Berikan output dalam format JSON (HANYA JSON, tanpa markdown):
         'X-Title': 'WhatWeCookToday'
       },
       body: JSON.stringify({
-        model: DEFAULT_MODEL,
+        models: [DEFAULT_MODEL, 'openrouter/free'],
         messages: [{ role: "user", content: prompt }],
         temperature: 0.9
       })
