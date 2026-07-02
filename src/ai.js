@@ -82,11 +82,27 @@ fromPantry true jika bahan ada di daftar input, false jika bahan tambahan.`;
 
     if (!text) throw new Error('Empty response from API');
 
-    // Extract JSON from response
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) throw new Error('Could not parse recipe JSON');
+    // Extract JSON from response robustly
+    let jsonString = text;
+    if (jsonString.includes('```json')) {
+      jsonString = jsonString.split('```json')[1].split('```')[0];
+    } else if (jsonString.includes('```')) {
+      jsonString = jsonString.split('```')[1].split('```')[0];
+    }
 
-    return JSON.parse(jsonMatch[0]);
+    const firstBrace = jsonString.indexOf('{');
+    const lastBrace = jsonString.lastIndexOf('}');
+    if (firstBrace === -1 || lastBrace === -1) {
+      console.error('Raw AI Output:', text);
+      throw new Error('Could not parse recipe JSON');
+    }
+
+    try {
+      return JSON.parse(jsonString.substring(firstBrace, lastBrace + 1));
+    } catch (e) {
+      console.error('Raw AI Output:', text);
+      throw new Error('Invalid JSON format from AI');
+    }
   } catch (err) {
     console.error('AI Generation error:', err);
     throw err;
@@ -137,10 +153,26 @@ Berikan output dalam format JSON (HANYA JSON, tanpa markdown):
 
     const data = await res.json();
     const text = data.choices?.[0]?.message?.content;
-    const jsonMatch = text?.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) throw new Error('Could not parse meal plan JSON');
+    let jsonString = text;
+    if (jsonString.includes('```json')) {
+      jsonString = jsonString.split('```json')[1].split('```')[0];
+    } else if (jsonString.includes('```')) {
+      jsonString = jsonString.split('```')[1].split('```')[0];
+    }
 
-    return JSON.parse(jsonMatch[0]);
+    const firstBrace = jsonString.indexOf('{');
+    const lastBrace = jsonString.lastIndexOf('}');
+    if (firstBrace === -1 || lastBrace === -1) {
+      console.error('Raw AI Output:', text);
+      throw new Error('Could not parse meal plan JSON');
+    }
+
+    try {
+      return JSON.parse(jsonString.substring(firstBrace, lastBrace + 1));
+    } catch (e) {
+      console.error('Raw AI Output:', text);
+      throw new Error('Invalid JSON format from AI');
+    }
   } catch (err) {
     console.error('Meal Plan AI error:', err);
     throw err;
