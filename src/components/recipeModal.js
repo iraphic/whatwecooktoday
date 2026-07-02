@@ -8,16 +8,20 @@ export function showRecipeModal(recipe) {
   const dialog = document.createElement('dialog');
   dialog.className = 'modal-dialog recipe-detail-modal';
   
-  // Custom styling to make the modal wider for the recipe details
-  dialog.style.maxWidth = '900px';
-  dialog.style.width = '90vw';
+  // Custom styling to make the modal fullscreen and centered
+  dialog.style.maxWidth = '1200px';
+  dialog.style.width = '95vw';
+  dialog.style.height = '90vh';
+  dialog.style.margin = 'auto';
+  dialog.style.display = 'flex';
+  dialog.style.flexDirection = 'column';
 
   dialog.innerHTML = `
     <div class="modal-header">
       <h2>${recipe.emoji || '🍽️'} ${recipe.name}</h2>
       <button class="modal-close">${icons.x}</button>
     </div>
-    <div class="modal-body" style="padding: 0; max-height: 80vh; overflow-y: auto; background: var(--color-neutral-50);">
+    <div class="modal-body" style="flex: 1; padding: 0; overflow-y: auto; background: var(--color-neutral-50);">
       
       <div class="recipe-result" style="margin: 0; padding: var(--space-4); background: transparent; box-shadow: none;">
         <div class="two-col-layout" style="gap: var(--space-5);">
