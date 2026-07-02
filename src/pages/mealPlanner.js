@@ -2,6 +2,7 @@
 import { mealPlan, pantry, favorites, showToast } from '../store.js';
 import { generateMealPlanAI } from '../ai.js';
 import { icons } from '../icons.js';
+import { showRecipeModal } from '../components/recipeModal.js';
 
 let viewMode = 'mingguan';
 let currentWeekStart = getMonday(new Date());
@@ -103,10 +104,13 @@ function render(container) {
               const meal = day.meals[mt];
               if (meal) {
                 return `
-                  <div class="meal-slot-card" data-date="${day.date}" data-meal="${mt}" title="${meal.name}">
+                  <div class="meal-slot-card" data-date="${day.date}" data-meal="${mt}" title="${meal.name}" style="position: relative;">
                     <div class="msc-image">${meal.emoji || '🍽️'}</div>
                     <div class="msc-name">${meal.name}</div>
                     <div class="msc-meta">${meal.cookTime || '?'} mnt · ${meal.calories || '?'} kkal</div>
+                    <button class="btn btn-icon-sm btn-ghost msc-delete" data-date="${day.date}" data-meal="${mt}" style="position: absolute; top: 4px; right: 4px; color: var(--color-danger); padding: 4px;" title="Hapus">
+                      ${icons.x}
+                    </button>
                   </div>
                 `;
               }
@@ -151,9 +155,24 @@ function render(container) {
   });
 
   container.querySelectorAll('.meal-slot-card').forEach(slot => {
-    slot.addEventListener('click', () => {
+    slot.addEventListener('click', (e) => {
+      // Ignore click if it was on the delete button
+      if (e.target.closest('.msc-delete')) return;
+      
       const date = slot.dataset.date;
       const mt = slot.dataset.meal;
+      const meal = mealPlan.getForDate(date)[mt];
+      if (meal) {
+        showRecipeModal(meal);
+      }
+    });
+  });
+
+  container.querySelectorAll('.msc-delete').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const date = btn.dataset.date;
+      const mt = btn.dataset.meal;
       if (confirm('Hapus menu ini?')) {
         mealPlan.removeMeal(date, mt);
         showToast('Menu dihapus');
