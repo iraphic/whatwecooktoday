@@ -30,11 +30,11 @@ export function renderSettings(container) {
 
     <div class="settings-section">
       <h3>🤖 AI Configuration</h3>
-      <p>Konfigurasi integrasi dengan Gemini AI untuk generate resep</p>
+      <p>Konfigurasi integrasi dengan OpenRouter AI untuk generate resep</p>
       <div class="settings-row" style="flex-direction: column; align-items: flex-start;">
         <div class="settings-row-info">
-          <h4>Gemini API Key</h4>
-          <p>Masukkan API key dari Google AI Studio. Tanpa API key, aplikasi akan menggunakan data demo.</p>
+          <h4>OpenRouter API Key</h4>
+          <p>Masukkan API key dari OpenRouter (openrouter.ai). Tanpa API key, aplikasi akan menggunakan data demo.</p>
         </div>
         <div class="api-key-input" style="width: 100%; margin-top: var(--space-3);">
           <input type="password" class="input-field" id="set-api-key" value="${current.apiKey || ''}" placeholder="AIzaSy..." />
@@ -82,7 +82,7 @@ export function renderSettings(container) {
           <span style="font-size: 2.5rem;">🍳</span>
           <div>
             <h4 style="font-size: var(--font-size-lg); font-weight: var(--font-weight-bold); color: var(--color-primary-800);">WhatWeCookToday</h4>
-            <p style="font-size: var(--font-size-sm); color: var(--color-neutral-500);">v1.0.0 — Asisten Dapur Pribadi Berbasis AI</p>
+            <p style="font-size: var(--font-size-sm); color: var(--color-neutral-500);">v${__APP_VERSION__} (Diperbarui: ${__APP_UPDATED__}) — Asisten Dapur Pribadi Berbasis AI</p>
           </div>
         </div>
         <p style="font-size: var(--font-size-sm); color: var(--color-neutral-600); line-height: 1.6;">

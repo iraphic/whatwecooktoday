@@ -2,7 +2,8 @@
 
 import { settings } from './store.js';
 
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
+const DEFAULT_MODEL = 'google/gemini-2.0-flash-lite-preview-02-05:free';
 
 // ── Generate recipe from ingredients ──
 export async function generateRecipe(ingredients) {
@@ -56,15 +57,18 @@ matchScore adalah persentase kesesuaian bahan yang tersedia (0-100).
 fromPantry true jika bahan ada di daftar input, false jika bahan tambahan.`;
 
   try {
-    const res = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
+    const res = await fetch(OPENROUTER_API_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+        'HTTP-Referer': window.location.origin,
+        'X-Title': 'WhatWeCookToday'
+      },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.8,
-          maxOutputTokens: 2048,
-        }
+        model: DEFAULT_MODEL,
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.8
       })
     });
 
@@ -74,7 +78,7 @@ fromPantry true jika bahan ada di daftar input, false jika bahan tambahan.`;
     }
 
     const data = await res.json();
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    const text = data.choices?.[0]?.message?.content;
 
     if (!text) throw new Error('Empty response from API');
 
@@ -114,19 +118,25 @@ Berikan output dalam format JSON (HANYA JSON, tanpa markdown):
 }`;
 
   try {
-    const res = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
+    const res = await fetch(OPENROUTER_API_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+        'HTTP-Referer': window.location.origin,
+        'X-Title': 'WhatWeCookToday'
+      },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.9, maxOutputTokens: 4096 }
+        model: DEFAULT_MODEL,
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.9
       })
     });
 
     if (!res.ok) throw new Error(`API error: ${res.status}`);
 
     const data = await res.json();
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    const text = data.choices?.[0]?.message?.content;
     const jsonMatch = text?.match(/\{[\s\S]*\}/);
     if (!jsonMatch) throw new Error('Could not parse meal plan JSON');
 
