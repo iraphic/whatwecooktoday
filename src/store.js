@@ -50,7 +50,7 @@ export const pantry = {
     return items[idx];
   },
   remove(id) {
-    const items = this.getAll().filter(i => i.id !== id);
+    const items = this.getAll().filter(i => String(i.id) !== String(id));
     save(STORAGE_KEYS.PANTRY, items);
   },
   getByCategory(cat) {
@@ -87,7 +87,7 @@ export const recipes = {
     return this.getAll().find(r => r.id === id);
   },
   remove(id) {
-    const items = this.getAll().filter(r => r.id !== id);
+    const items = this.getAll().filter(r => String(r.id) !== String(id));
     save(STORAGE_KEYS.HISTORY, items);
   }
 };
@@ -104,7 +104,7 @@ export const favorites = {
     save(STORAGE_KEYS.FAVORITES, items);
   },
   remove(id) {
-    const items = this.getAll().filter(r => r.id !== id);
+    const items = this.getAll().filter(r => String(r.id) !== String(id));
     save(STORAGE_KEYS.FAVORITES, items);
   },
   isFavorite(id) {
@@ -173,7 +173,7 @@ export const shopping = {
     return items[idx];
   },
   remove(id) {
-    const items = this.getAll().filter(i => i.id !== id);
+    const items = this.getAll().filter(i => String(i.id) !== String(id));
     save(STORAGE_KEYS.SHOPPING, items);
   },
   clearBought() {

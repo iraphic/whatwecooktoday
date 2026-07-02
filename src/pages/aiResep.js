@@ -121,10 +121,8 @@ function render(container) {
     render(container);
 
     try {
-      const recipe = await generateRecipe(selectedIngredients);
-      currentRecipe = recipe;
-      // Save to history
-      recipes.add(recipe);
+      const generated = await generateRecipe(selectedIngredients);
+      currentRecipe = recipes.add(generated);
       isLoading = false;
       render(container);
       showToast('Resep berhasil di-generate! 🎉');
@@ -345,9 +343,8 @@ function setupRecipeEvents(container) {
     render(container);
 
     try {
-      const recipe = await generateRecipe(selectedIngredients);
-      currentRecipe = recipe;
-      recipes.add(recipe);
+      const generated = await generateRecipe(selectedIngredients);
+      currentRecipe = recipes.add(generated);
       isLoading = false;
       render(container);
       showToast('Resep baru berhasil di-generate! 🎉');
