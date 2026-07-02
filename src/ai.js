@@ -3,7 +3,7 @@
 import { settings } from './store.js';
 
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
-const DEFAULT_MODEL = 'google/gemini-2.0-flash-exp:free';
+const DEFAULT_MODEL = 'openrouter/free';
 
 // ── Generate recipe from ingredients ──
 export async function generateRecipe(ingredients) {
